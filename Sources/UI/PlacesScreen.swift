@@ -21,7 +21,7 @@ extension TripAdvisor: TargetType {
     }
 
     var path: String {
-        ""
+        "/api/v1/location/nearby_search"
     }
 
     var method: Moya.Method {
@@ -29,7 +29,15 @@ extension TripAdvisor: TargetType {
     }
 
     var task: Moya.Task {
-        .requestPlain
+        switch self {
+        case let .search(lat, lon):
+            let params = [
+                "latLong": "\(lat),\(lon)",
+                "key": "",
+                "language": "en",
+            ]
+            return .requestParameters(parameters: params, encoding: URLEncoding.queryString)
+        }
     }
 
     var headers: [String: String]? {
@@ -46,23 +54,26 @@ struct Places {
 
     enum Action: Sendable {
         case onAppear
+        case onPlacesReceived([Place.State])
         case places(IdentifiedActionOf<Place>)
     }
 
     var body: some Reducer<State, Action> {
-        Reduce { _, action in
+        Reduce { state, action in
             switch action {
             case .onAppear:
-                let provider = MoyaProvider<TripAdvisor>()
-                provider.request(.search(100, 200)) { result in
-                    switch result {
-                    case let .success(moyaResponse):
-                        let data = moyaResponse.data
-                        let statusCode = moyaResponse.statusCode
-
-                    case let .failure(error):
-                        break
-                    }
+                return .run { send in
+                    let provider = MoyaProvider<TripAdvisor>()
+                    let response = try await provider.requestPublisher(.search(49.7475, 13.3776)).values.first { _ in true }
+                    let processed = try JSONDecoder().decode(NearbySearchResponse.self, from: response!.data)
+                    await send(.onPlacesReceived(processed.data?.map {
+                        Place.State(location: $0)
+                    } ?? []))
+                }
+            case let .onPlacesReceived(places):
+                state.places.removeAll()
+                for var place in places {
+                    state.places.append(place)
                 }
                 return .none
             case .places:
