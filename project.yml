@@ -9,8 +9,11 @@ packages:
     url: https://github.com/pointfreeco/swift-composable-architecture.git
     version: 1.19.0
   CombineMoya:
-     url: https://github.com/Moya/Moya.git
-     version: 15.0.3
+    url: https://github.com/Moya/Moya.git
+    version: 15.0.3
+  SwiftLocation:
+    url: https://github.com/malcommac/SwiftLocation.git
+    branch: master
 targets:
   NearMeApp:
     settings:
@@ -23,6 +26,7 @@ targets:
     dependencies:
       - package: ComposableArchitecture
       - package: CombineMoya
+      - package: SwiftLocation
     info:
       path: Sources/Info.plist
       properties:
