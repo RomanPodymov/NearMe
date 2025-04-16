@@ -11,14 +11,13 @@ import SwiftUI
 
 @main
 struct NearMeApp: App {
-    static let store = Store(initialState: Places.State()) {
+    let store = Store(initialState: Places.State()) {
         Places()
-            ._printChanges()
     }
 
     var body: some Scene {
         WindowGroup {
-            PlacesScreen(store: Self.store)
+            PlacesScreen(store: store)
         }
     }
 }
