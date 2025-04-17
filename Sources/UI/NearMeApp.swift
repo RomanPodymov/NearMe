@@ -18,6 +18,7 @@ struct NearMeApp: App {
     var body: some Scene {
         WindowGroup {
             PlacesScreen(store: store)
+                .modelContainer(for: Location.self)
         }
     }
 }

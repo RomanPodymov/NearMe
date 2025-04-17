@@ -8,7 +8,10 @@
 
 import CombineMoya
 import ComposableArchitecture
+import CoreLocation
 import Moya
+import SwiftData
+import SwiftLocation
 import SwiftUI
 
 @Reducer
@@ -18,27 +21,55 @@ struct Places {
         var places: IdentifiedArrayOf<Place.State> = []
     }
 
-    enum Action: Sendable {
-        case onAppear
-        case onPlacesReceived([Place.State])
+    enum Action {
+        case onAppear(ModelContext)
+        case onPlacesReceived([Location])
         case places(IdentifiedActionOf<Place>)
     }
 
     var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
-            case .onAppear:
-                return .run { send in
-                    let provider = MoyaProvider<TripAdvisorService>()
-                    let response = try await provider.requestPublisher(.search(49.7475, 13.3776)).values.first { _ in true }
-                    let processed = try JSONDecoder().decode(NearbySearchResponse.self, from: response!.data)
-                    await send(.onPlacesReceived(processed.data?.map {
+            case let .onAppear(modelContext):
+                if let places = try? modelContext.fetch(FetchDescriptor<Location>()), !places.isEmpty {
+                    state.places.removeAll()
+                    let states = places.map {
                         Place.State(location: $0)
-                    } ?? []))
+                    }
+                    for place in states {
+                        state.places.append(place)
+                    }
+                    return .none
+                }
+                return .run { send in
+                    // let location = SwiftLocation.Location()
+                    // let obtaninedStatus = try await location.requestPermission(.whenInUse)
+                    // let coordinate = try await location.requestLocation().location?.coordinate
+                    let provider = MoyaProvider<TripAdvisorService>()
+                    let response = try await provider.requestPublisher(
+                        // .search(
+                        // coordinate?.longitude ?? .zero,
+                        // coordinate?.latitude ?? .zero
+                        // )
+                        .search(49.7475, 13.3776)
+                    ).values.first { _ in true }
+                    let processed = try JSONDecoder().decode(NearbySearchResponse.self, from: response!.data)
+                    processed.data.forEach {
+                        modelContext.insert($0)
+                    }
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        print(error)
+                    }
+                    await send(.onPlacesReceived(processed.data))
                 }
             case let .onPlacesReceived(places):
                 state.places.removeAll()
-                for var place in places {
+                let states = places.map {
+                    Place.State(location: $0)
+                }
+                for place in states {
                     state.places.append(place)
                 }
                 return .none
@@ -52,6 +83,8 @@ struct Places {
 struct PlacesScreen: View {
     var store: StoreOf<Places>
 
+    @Environment(\.modelContext) private var modelContext
+
     var body: some View {
         NavigationStack {
             List {
@@ -61,7 +94,9 @@ struct PlacesScreen: View {
             }
         }
         .onAppear {
-            store.send(.onAppear)
+            store.send(.onAppear(modelContext))
         }
     }
 }
+
+extension ModelContext: @unchecked @retroactive Sendable {}
