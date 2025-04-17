@@ -31,27 +31,29 @@ struct Places {
         Reduce { state, action in
             switch action {
             case let .onAppear(modelContext):
-                if let places = try? modelContext.fetch(FetchDescriptor<Location>()), !places.isEmpty {
-                    state.places.removeAll()
-                    let states = places.map {
-                        Place.State(location: $0)
-                    }
-                    for place in states {
-                        state.places.append(place)
-                    }
-                    return .none
-                }
+                /* if let places = try? modelContext.fetch(FetchDescriptor<Location>()), !places.isEmpty {
+                     state.places.removeAll()
+                     let states = places.map {
+                         Place.State(location: $0)
+                     }
+                     for place in states {
+                         state.places.append(place)
+                     }
+                     return .none
+                 } */
                 return .run { send in
-                    // let location = SwiftLocation.Location()
-                    // let obtaninedStatus = try await location.requestPermission(.whenInUse)
-                    // let coordinate = try await location.requestLocation().location?.coordinate
+                    let coordinate = try await _Concurrency.Task { @MainActor in
+                        let location = SwiftLocation.Location()
+                        // _ = try await location.requestPermission(.always)
+                        return try await location.requestLocation().location?.coordinate
+                    }.value
+
                     let provider = MoyaProvider<TripAdvisorService>()
                     let response = try await provider.requestPublisher(
-                        // .search(
-                        // coordinate?.longitude ?? .zero,
-                        // coordinate?.latitude ?? .zero
-                        // )
-                        .search(49.7475, 13.3776)
+                        .search(
+                            coordinate?.latitude ?? .zero,
+                            coordinate?.longitude ?? .zero
+                        )
                     ).values.first { _ in true }
                     let processed = try JSONDecoder().decode(NearbySearchResponse.self, from: response!.data)
                     processed.data.forEach {
@@ -100,3 +102,5 @@ struct PlacesScreen: View {
 }
 
 extension ModelContext: @unchecked @retroactive Sendable {}
+
+extension Tasks.ContinuousUpdateLocation.StreamEvent: @retroactive @unchecked Sendable {}

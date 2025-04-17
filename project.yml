@@ -34,7 +34,7 @@ targets:
           NSAllowsArbitraryLoads: YES
         NSLocationWhenInUseUsageDescription: When in use permissions
         NSLocationAlwaysUsageDescription: Always permissions
-        NSLocationAlwaysAndWhenInUsageDescription: Always and in usage permissions
+        NSLocationAlwaysAndWhenInUseUsageDescription: Always and in usage permissions
     preBuildScripts:
       - script: "mint run swiftgen"
         name: SwiftGen
