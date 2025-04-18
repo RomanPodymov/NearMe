@@ -11,29 +11,56 @@ import SwiftData
 
 // MARK: - NearbySearchResponse
 
-struct NearbySearchResponse: Codable {
-    let data: [Location]
+@Model
+final class NearbySearchResponse: Codable, Equatable {
+    var data: [Location]
+
+    private enum CodingKeys: String, CodingKey {
+        case data
+    }
+
+    init(data: [Location]) {
+        self.data = data
+    }
+
+    init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        data = try values.decode([Location].self, forKey: .data)
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(data, forKey: .data)
+    }
 }
 
 // MARK: - Location
 
-struct Location: Codable, Equatable {
-    let name: String?
-}
-
 @Model
-final class LocationPersistentModel {
+final class Location: Codable, Equatable {
     var name: String?
 
-    init(
-        name: String? = nil
-    ) {
+    private enum CodingKeys: String, CodingKey {
+        case name
+    }
+
+    init(name: String? = nil) {
         self.name = name
+    }
+
+    init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        name = try values.decode(String.self, forKey: .name)
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(name, forKey: .name)
     }
 }
 
 final class LocationPersistentModelDTO: Sendable, Identifiable {
-    let id: PersistentIdentifier
+    let id: PersistentIdentifier?
     let name: String?
 
     enum CodingKeys: String, CodingKey {
@@ -41,7 +68,7 @@ final class LocationPersistentModelDTO: Sendable, Identifiable {
     }
 
     init(
-        id: PersistentIdentifier,
+        id: PersistentIdentifier? = nil,
         name: String? = nil
     ) {
         self.id = id

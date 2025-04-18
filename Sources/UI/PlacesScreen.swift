@@ -19,14 +19,14 @@ actor LocationActor {
     private var context: ModelContext { modelExecutor.modelContext }
 
     func fetchLocations() throws -> [LocationPersistentModelDTO] {
-        try context.fetch(FetchDescriptor<LocationPersistentModel>()).map {
+        try context.fetch(FetchDescriptor<Location>()).map {
             .init(id: $0.id, name: $0.name)
         }
     }
 
-    func saveLocations(locations: [LocationPersistentModel]) throws {
+    func saveLocations(locations: [LocationPersistentModelDTO]) throws {
         locations.forEach {
-            context.insert($0)
+            context.insert(Location(name: $0.name))
         }
         try context.save()
     }
@@ -74,7 +74,7 @@ struct Places {
                     ).values.first { _ in true }
                     let processed = try JSONDecoder().decode(NearbySearchResponse.self, from: response!.data)
                     try await locationActor.saveLocations(locations: processed.data.map {
-                        .init(name: $0.name)
+                        LocationPersistentModelDTO(name: $0.name)
                     })
                     await send(.onPlacesReceived(processed.data))
                 }
