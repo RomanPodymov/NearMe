@@ -6,18 +6,18 @@
 //  Copyright © 2025 NearMe. All rights reserved.
 //
 
-import Foundation
 import ComposableArchitecture
+import Foundation
 
 @Reducer
-struct Place {
+struct PlaceReducer {
     @ObservableState
     struct State: Equatable, Identifiable {
-        let id: UUID = UUID()
-        let location: Location
+        let id: UUID = .init()
+        var location: Location?
     }
 
-    enum Action {
+    enum Action: Sendable {
         case some
     }
 

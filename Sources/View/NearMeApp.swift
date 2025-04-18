@@ -7,18 +7,31 @@
 //
 
 import ComposableArchitecture
+import SwiftData
 import SwiftUI
 
 @main
 struct NearMeApp: App {
-    let store = Store(initialState: Places.State()) {
-        Places()
+    let store: Store<PlacesReducer.State, PlacesReducer.Action>
+    let container: ModelContainer
+
+    init() {
+        let configuration = ModelConfiguration(for: Location.self)
+        let schema = Schema([Location.self])
+
+        // swiftlint:disable force_try
+        let container = try! ModelContainer(for: schema, configurations: [configuration])
+        // swiftlint:enable force_try
+        self.container = container
+        store = Store(initialState: PlacesReducer.State()) {
+            PlacesReducer(container: container)
+        }
     }
 
     var body: some Scene {
         WindowGroup {
-            PlacesScreen(store: store)
-                .modelContainer(for: Location.self)
+            PlacesView(store: store)
+                .modelContainer(container)
         }
     }
 }

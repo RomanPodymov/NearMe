@@ -8,24 +8,25 @@
 
 import CombineMoya
 import ComposableArchitecture
-import CoreLocation
+import Foundation
 import Moya
 import SwiftData
 @preconcurrency import SwiftLocation
-import SwiftUI
 
 @Reducer
-struct Places {
+struct PlacesReducer {
     @ObservableState
     struct State: Equatable {
-        var places: IdentifiedArrayOf<Place.State> = []
+        var places: IdentifiedArrayOf<PlaceReducer.State> = []
     }
 
     enum Action {
         case onAppear(ModelContext)
         case onPlacesReceived([Location])
-        case places(IdentifiedActionOf<Place>)
+        case places(IdentifiedActionOf<PlaceReducer>)
     }
+
+    let container: ModelContainer
 
     var body: some Reducer<State, Action> {
         Reduce { state, action in
@@ -69,10 +70,10 @@ struct Places {
         }
     }
 
-    private func set(state: inout Places.State, places: [Location]) {
+    private func set(state: inout PlacesReducer.State, places: [Location]) {
         state.places.removeAll()
         let states = places.map {
-            Place.State(location: $0)
+            PlaceReducer.State(location: $0)
         }
         for place in states {
             state.places.append(place)
