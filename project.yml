@@ -32,9 +32,9 @@ targets:
       properties:
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: YES
-        NSLocationWhenInUseUsageDescription: When in use permissions
-        NSLocationAlwaysUsageDescription: Always permissions
-        NSLocationAlwaysAndWhenInUseUsageDescription: Always and in usage permissions
+        NSLocationWhenInUseUsageDescription: TODO
+        NSLocationAlwaysUsageDescription: TODO
+        NSLocationAlwaysAndWhenInUseUsageDescription: TODO
     preBuildScripts:
       - script: "mint run swiftgen"
         name: SwiftGen

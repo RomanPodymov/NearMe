@@ -30,10 +30,6 @@ final class LocationPersistentModelDTO: Sendable, Identifiable {
     let id: PersistentIdentifier?
     let name: String?
 
-    enum CodingKeys: String, CodingKey {
-        case name
-    }
-
     init(
         id: PersistentIdentifier? = nil,
         name: String? = nil
