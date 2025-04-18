@@ -11,8 +11,22 @@ import ComposableArchitecture
 import CoreLocation
 import Moya
 import SwiftData
-import SwiftLocation
+@preconcurrency import SwiftLocation
 import SwiftUI
+
+@ModelActor
+actor LocationActor {
+    func fetchLocations() throws -> [Location] {
+        try modelContext.fetch(FetchDescriptor<Location>())
+    }
+
+    func saveLocations(locations: [Location]) throws {
+        locations.forEach {
+            modelContext.insert($0)
+        }
+        try modelContext.save()
+    }
+}
 
 @Reducer
 struct Places {
@@ -31,22 +45,19 @@ struct Places {
         Reduce { state, action in
             switch action {
             case let .onAppear(modelContext):
-                /* if let places = try? modelContext.fetch(FetchDescriptor<Location>()), !places.isEmpty {
-                     state.places.removeAll()
-                     let states = places.map {
-                         Place.State(location: $0)
-                     }
-                     for place in states {
-                         state.places.append(place)
-                     }
-                     return .none
-                 } */
                 return .run { send in
-                    let coordinate = try await _Concurrency.Task { @MainActor in
-                        let location = SwiftLocation.Location()
-                        // _ = try await location.requestPermission(.always)
-                        return try await location.requestLocation().location?.coordinate
+                    let locationActor = LocationActor(modelContainer: modelContext.container)
+                    /* if let places = try? await locationActor.fetchLocations(), !places.isEmpty {
+                         set(state: &state, places: places)
+                         return
+                     } */
+                    let location = await _Concurrency.Task { @MainActor in
+                        SwiftLocation.Location()
                     }.value
+
+                    // _ = try await location.requestPermission(.always)
+
+                    let coordinate = try await location.requestLocation().location?.coordinate
 
                     let provider = MoyaProvider<TripAdvisorService>()
                     let response = try await provider.requestPublisher(
@@ -56,28 +67,25 @@ struct Places {
                         )
                     ).values.first { _ in true }
                     let processed = try JSONDecoder().decode(NearbySearchResponse.self, from: response!.data)
-                    processed.data.forEach {
-                        modelContext.insert($0)
-                    }
-                    do {
-                        try modelContext.save()
-                    } catch {
-                        print(error)
-                    }
+                    // try await locationActor.saveLocations(locations: processed.data)
                     await send(.onPlacesReceived(processed.data))
                 }
             case let .onPlacesReceived(places):
-                state.places.removeAll()
-                let states = places.map {
-                    Place.State(location: $0)
-                }
-                for place in states {
-                    state.places.append(place)
-                }
+                set(state: &state, places: places)
                 return .none
             case .places:
                 return .none
             }
+        }
+    }
+
+    private func set(state: inout Places.State, places: [Location]) {
+        state.places.removeAll()
+        let states = places.map {
+            Place.State(location: $0)
+        }
+        for place in states {
+            state.places.append(place)
         }
     }
 }
@@ -102,5 +110,3 @@ struct PlacesScreen: View {
 }
 
 extension ModelContext: @unchecked @retroactive Sendable {}
-
-extension Tasks.ContinuousUpdateLocation.StreamEvent: @retroactive @unchecked Sendable {}
