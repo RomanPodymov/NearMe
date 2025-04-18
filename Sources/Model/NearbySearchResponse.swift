@@ -13,7 +13,7 @@ import SwiftData
 
 @Model
 final class NearbySearchResponse: Codable, Equatable {
-    var data: [Location]
+    var data: [Location]?
 
     private enum CodingKeys: String, CodingKey {
         case data
@@ -25,7 +25,7 @@ final class NearbySearchResponse: Codable, Equatable {
 
     init(from decoder: any Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        data = try values.decode([Location].self, forKey: .data)
+        data = try values.decodeIfPresent([Location].self, forKey: .data)
     }
 
     func encode(to encoder: any Encoder) throws {

@@ -8,6 +8,7 @@
 
 import CombineMoya
 import ComposableArchitecture
+import CoreLocation
 import Foundation
 import Moya
 import SwiftData
@@ -40,14 +41,8 @@ struct PlacesReducer {
                         }))
                         return
                     }
-                    let location = await _Concurrency.Task { @MainActor in
-                        SwiftLocation.Location()
-                    }.value
 
-                    // _ = try await location.requestPermission(.always)
-
-                    let coordinate = try await location.requestLocation().location?.coordinate
-
+                    let coordinate = try await receiveCoordinate()
                     let provider = MoyaProvider<TripAdvisorService>()
                     let response = try await provider.requestPublisher(
                         .search(
@@ -55,11 +50,11 @@ struct PlacesReducer {
                             coordinate?.longitude ?? .zero
                         )
                     ).values.first { _ in true }
-                    let processed = try JSONDecoder().decode(NearbySearchResponse.self, from: response!.data)
-                    try await locationActor.saveLocations(locations: processed.data.map {
+                    let processed = try JSONDecoder().decode(NearbySearchResponse.self, from: response?.data ?? .init())
+                    try await locationActor.saveLocations(locations: processed.data?.map {
                         LocationPersistentModelDTO(name: $0.name)
-                    })
-                    await send(.onPlacesReceived(processed.data))
+                    } ?? .init())
+                    await send(.onPlacesReceived(processed.data ?? .init()))
                 }
             case let .onPlacesReceived(places):
                 set(state: &state, places: places)
@@ -68,6 +63,18 @@ struct PlacesReducer {
                 return .none
             }
         }
+    }
+
+    private func receiveCoordinate() async throws -> CLLocationCoordinate2D? {
+        let location = await _Concurrency.Task { @MainActor in
+            SwiftLocation.Location()
+        }.value
+
+        let requestPermissionResult = try await location.requestPermission(.always)
+        if requestPermissionResult == .denied || requestPermissionResult == .restricted {
+            fatalError()
+        }
+        return try await location.requestLocation().location?.coordinate
     }
 
     private func set(state: inout PlacesReducer.State, places: [Location]) {
