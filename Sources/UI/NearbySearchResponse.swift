@@ -11,52 +11,40 @@ import SwiftData
 
 // MARK: - NearbySearchResponse
 
-@Model
-final class NearbySearchResponse: Codable, Equatable {
-    var data: [Location]
-
-    enum CodingKeys: String, CodingKey {
-        case data
-    }
-
-    init(data: [Location]) {
-        self.data = data
-    }
-
-    required init(from decoder: Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        data = try values.decode([Location].self, forKey: .data)
-    }
-
-    func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(data, forKey: .data)
-    }
+struct NearbySearchResponse: Codable {
+    let data: [Location]
 }
 
 // MARK: - Location
 
-@Model
-final class Location: Codable, Equatable {
-    var name: String?
+struct Location: Codable, Equatable {
+    let name: String?
+}
 
-    enum CodingKeys: String, CodingKey {
-        case name
-    }
+@Model
+final class LocationPersistentModel {
+    var name: String?
 
     init(
         name: String? = nil
     ) {
         self.name = name
     }
+}
 
-    required init(from decoder: any Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        name = try values.decode(String.self, forKey: .name)
+final class LocationPersistentModelDTO: Sendable, Identifiable {
+    let id: PersistentIdentifier
+    let name: String?
+
+    enum CodingKeys: String, CodingKey {
+        case name
     }
 
-    func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(name, forKey: .name)
+    init(
+        id: PersistentIdentifier,
+        name: String? = nil
+    ) {
+        self.id = id
+        self.name = name
     }
 }

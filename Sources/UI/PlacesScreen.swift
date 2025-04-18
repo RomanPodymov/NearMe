@@ -16,15 +16,19 @@ import SwiftUI
 
 @ModelActor
 actor LocationActor {
-    func fetchLocations() throws -> [Location] {
-        try modelContext.fetch(FetchDescriptor<Location>())
+    private var context: ModelContext { modelExecutor.modelContext }
+
+    func fetchLocations() throws -> [LocationPersistentModelDTO] {
+        try context.fetch(FetchDescriptor<LocationPersistentModel>()).map {
+            .init(id: $0.id, name: $0.name)
+        }
     }
 
-    func saveLocations(locations: [Location]) throws {
+    func saveLocations(locations: [LocationPersistentModel]) throws {
         locations.forEach {
-            modelContext.insert($0)
+            context.insert($0)
         }
-        try modelContext.save()
+        try context.save()
     }
 }
 
@@ -47,10 +51,12 @@ struct Places {
             case let .onAppear(modelContext):
                 return .run { send in
                     let locationActor = LocationActor(modelContainer: modelContext.container)
-                    /* if let places = try? await locationActor.fetchLocations(), !places.isEmpty {
-                         set(state: &state, places: places)
-                         return
-                     } */
+                    if let places = try? await locationActor.fetchLocations(), !places.isEmpty {
+                        await send(.onPlacesReceived(places.map {
+                            .init(name: $0.name)
+                        }))
+                        return
+                    }
                     let location = await _Concurrency.Task { @MainActor in
                         SwiftLocation.Location()
                     }.value
@@ -67,7 +73,9 @@ struct Places {
                         )
                     ).values.first { _ in true }
                     let processed = try JSONDecoder().decode(NearbySearchResponse.self, from: response!.data)
-                    // try await locationActor.saveLocations(locations: processed.data)
+                    try await locationActor.saveLocations(locations: processed.data.map {
+                        .init(name: $0.name)
+                    })
                     await send(.onPlacesReceived(processed.data))
                 }
             case let .onPlacesReceived(places):
