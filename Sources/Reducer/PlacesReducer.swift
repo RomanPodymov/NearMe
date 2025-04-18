@@ -1,8 +1,8 @@
 //
-//  PlacesScreen.swift
+//  PlacesReducer.swift
 //  NearMe
 //
-//  Created by Roman Podymov on 16/04/2025.
+//  Created by Roman Podymov on 18/04/2025.
 //  Copyright © 2025 NearMe. All rights reserved.
 //
 
@@ -13,24 +13,6 @@ import Moya
 import SwiftData
 @preconcurrency import SwiftLocation
 import SwiftUI
-
-@ModelActor
-actor LocationActor {
-    private var context: ModelContext { modelExecutor.modelContext }
-
-    func fetchLocations() throws -> [LocationPersistentModelDTO] {
-        try context.fetch(FetchDescriptor<Location>()).map {
-            .init(id: $0.id, name: $0.name)
-        }
-    }
-
-    func saveLocations(locations: [LocationPersistentModelDTO]) throws {
-        locations.forEach {
-            context.insert(Location(name: $0.name))
-        }
-        try context.save()
-    }
-}
 
 @Reducer
 struct Places {
@@ -97,24 +79,3 @@ struct Places {
         }
     }
 }
-
-struct PlacesScreen: View {
-    var store: StoreOf<Places>
-
-    @Environment(\.modelContext) private var modelContext
-
-    var body: some View {
-        NavigationStack {
-            List {
-                ForEach(store.scope(state: \.places, action: \.places)) { store in
-                    PlaceScreen(store: store)
-                }
-            }
-        }
-        .onAppear {
-            store.send(.onAppear(modelContext))
-        }
-    }
-}
-
-extension ModelContext: @unchecked @retroactive Sendable {}

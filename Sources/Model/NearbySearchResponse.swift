@@ -58,20 +58,3 @@ final class Location: Codable, Equatable {
         try container.encode(name, forKey: .name)
     }
 }
-
-final class LocationPersistentModelDTO: Sendable, Identifiable {
-    let id: PersistentIdentifier?
-    let name: String?
-
-    enum CodingKeys: String, CodingKey {
-        case name
-    }
-
-    init(
-        id: PersistentIdentifier? = nil,
-        name: String? = nil
-    ) {
-        self.id = id
-        self.name = name
-    }
-}
