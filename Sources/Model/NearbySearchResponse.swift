@@ -50,7 +50,7 @@ final class Location: Codable, Equatable {
 
     init(from decoder: any Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        name = try values.decode(String.self, forKey: .name)
+        name = try values.decodeIfPresent(String.self, forKey: .name)
     }
 
     func encode(to encoder: any Encoder) throws {
