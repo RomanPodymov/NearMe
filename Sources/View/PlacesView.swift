@@ -24,7 +24,7 @@ struct PlacesView: View {
             }
         }
         .onAppear {
-            store.send(.onAppear(modelContext))
+            store.send(.onAppear)
         }
     }
 }

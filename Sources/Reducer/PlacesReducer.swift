@@ -21,7 +21,7 @@ struct PlacesReducer {
     }
 
     enum Action {
-        case onAppear(ModelContext)
+        case onAppear
         case onPlacesReceived([Location])
         case places(IdentifiedActionOf<PlaceReducer>)
     }
@@ -31,9 +31,9 @@ struct PlacesReducer {
     var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
-            case let .onAppear(modelContext):
+            case .onAppear:
                 return .run { send in
-                    let locationActor = LocationActor(modelContainer: modelContext.container)
+                    let locationActor = LocationActor(modelContainer: container)
                     if let places = try? await locationActor.fetchLocations(), !places.isEmpty {
                         await send(.onPlacesReceived(places.map {
                             .init(name: $0.name)
