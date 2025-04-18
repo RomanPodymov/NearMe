@@ -28,6 +28,7 @@ struct PlacesReducer {
     }
 
     let container: ModelContainer
+    @Dependency(\.locationsClient) var locationsClient
 
     var body: some Reducer<State, Action> {
         Reduce { state, action in
@@ -43,18 +44,12 @@ struct PlacesReducer {
                     }
 
                     let coordinate = try await receiveCoordinate()
-                    let provider = MoyaProvider<TripAdvisorService>()
-                    let response = try await provider.requestPublisher(
-                        .search(
-                            coordinate?.latitude ?? .zero,
-                            coordinate?.longitude ?? .zero
-                        )
-                    ).values.first { _ in true }
-                    let processed = try JSONDecoder().decode(NearbySearchResponse.self, from: response?.data ?? .init())
-                    try await locationActor.saveLocations(locations: processed.data?.map {
+
+                    let locations = try await locationsClient.search(coordinate?.latitude, coordinate?.longitude)
+                    try await locationActor.saveLocations(locations: locations.map {
                         LocationPersistentModelDTO(name: $0.name)
-                    } ?? .init())
-                    await send(.onPlacesReceived(processed.data ?? .init()))
+                    })
+                    await send(.onPlacesReceived(locations))
                 }
             case let .onPlacesReceived(places):
                 set(state: &state, places: places)
