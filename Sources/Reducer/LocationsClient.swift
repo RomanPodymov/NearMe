@@ -30,7 +30,9 @@ struct LocationsClient {
 }
 
 extension LocationsClient: TestDependencyKey {
-    static let previewValue = Self()
+    static let previewValue = Self(search: { _, _ in
+        [Location(name: "Location1"), Location(name: "2"), Location(name: "3")]
+    })
 
     static let testValue = Self()
 }

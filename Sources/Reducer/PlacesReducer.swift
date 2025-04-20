@@ -11,7 +11,6 @@ import ComposableArchitecture
 import CoreLocation
 import Foundation
 import Moya
-import SwiftData
 @preconcurrency import SwiftLocation
 
 @Reducer
@@ -27,7 +26,7 @@ struct PlacesReducer {
         case places(IdentifiedActionOf<PlaceReducer>)
     }
 
-    let container: ModelContainer
+    @Dependency(\.localStorageClient) var localStorageClient
     @Dependency(\.locationsClient) var locationsClient
 
     var body: some Reducer<State, Action> {
@@ -35,8 +34,7 @@ struct PlacesReducer {
             switch action {
             case .onAppear:
                 return .run { send in
-                    let locationActor = LocationActor(modelContainer: container)
-                    if let places = try? await locationActor.fetchLocations(), !places.isEmpty {
+                    if let places = try? await localStorageClient.search(nil, nil), !places.isEmpty {
                         await send(.onPlacesReceived(places.map {
                             .init(name: $0.name)
                         }))
@@ -46,7 +44,7 @@ struct PlacesReducer {
                     let coordinate = try await receiveCoordinate()
 
                     let locations = try await locationsClient.search(coordinate?.latitude, coordinate?.longitude)
-                    try await locationActor.saveLocations(locations: locations.map {
+                    try await localStorageClient.save(locations.map {
                         LocationPersistentModelDTO(name: $0.name)
                     })
                     await send(.onPlacesReceived(locations))

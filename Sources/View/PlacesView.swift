@@ -7,13 +7,10 @@
 //
 
 import ComposableArchitecture
-import SwiftData
 import SwiftUI
 
 struct PlacesView: View {
     var store: StoreOf<PlacesReducer>
-
-    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         NavigationStack {
@@ -28,5 +25,3 @@ struct PlacesView: View {
         }
     }
 }
-
-extension ModelContext: @unchecked @retroactive Sendable {}
