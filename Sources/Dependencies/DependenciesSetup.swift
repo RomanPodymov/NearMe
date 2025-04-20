@@ -9,6 +9,7 @@
 import ComposableArchitecture
 import Foundation
 import Moya
+import SwiftData
 
 // MARK: - LocationsClient
 
@@ -31,20 +32,29 @@ extension LocationsClient: TestDependencyKey {
         [Location(name: "Location1"), Location(name: "2"), Location(name: "3")]
     })
 
-    static let testValue = Self()
+    static let testValue = previewValue
 }
 
 // MARK: - LocalStorageClient
 
 extension LocalStorageClient: DependencyKey {
     static let liveValue: LocalStorageClient = {
+        let configuration = ModelConfiguration(for: Location.self)
+        let schema = Schema([Location.self])
+
+        // swiftlint:disable force_try
+        let container = try! ModelContainer(for: schema, configurations: [configuration])
+        // swiftlint:enable force_try
+        let locationActor: SwiftDataLocationActor = .init(modelContainer: container)
+
         var client = LocalStorageClient()
-        client.search = { [locationActor = client.locationActor] _, _ in
+        client.search = { _, _ in
             try await locationActor.fetchLocations()
         }
-        client.save = { [locationActor = client.locationActor] in
+        client.save = {
             try await locationActor.saveLocations(locations: $0)
         }
+
         return client
     }()
 }
@@ -60,13 +70,5 @@ extension LocalStorageClient: TestDependencyKey {
         return client
     }()
 
-    static let testValue: LocalStorageClient = {
-        var client = Self()
-        client.search = { _, _ in
-            [LocationPersistentModelDTO(name: "Location1"), LocationPersistentModelDTO(name: "Location2"), LocationPersistentModelDTO(name: "Location3")]
-        }
-        client.save = { _ in
-        }
-        return client
-    }()
+    static let testValue = previewValue
 }

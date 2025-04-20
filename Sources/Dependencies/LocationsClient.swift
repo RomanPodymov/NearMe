@@ -11,7 +11,9 @@ import Foundation
 
 @DependencyClient
 struct LocationsClient {
-    var search: @Sendable (Double?, Double?) async throws -> [Location]
+    typealias SearchFunction = @Sendable (Double?, Double?) async throws -> [Location]
+
+    var search: SearchFunction
 }
 
 extension DependencyValues {
