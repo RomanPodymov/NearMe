@@ -14,17 +14,30 @@ import SwiftData
 // MARK: - LocationsClient
 
 extension LocationsClient: DependencyKey {
-    static let liveValue = LocationsClient { latitude, longitude in
+    private static let tripAdvisorSource = LocationsClient { latitude, longitude throws (LocationsClientError) in
         let provider = MoyaProvider<TripAdvisorService>()
-        let response = try await provider.requestPublisher(
-            .search(
-                latitude ?? .zero,
-                longitude ?? .zero
-            )
-        ).values.first { _ in true }
-        let processed = try JSONDecoder().decode(NearbySearchResponse.self, from: response?.data ?? .init())
-        return processed.data ?? .init()
+        do {
+            let response = try await provider.requestPublisher(
+                .search(
+                    latitude ?? .zero,
+                    longitude ?? .zero
+                )
+            ).values.first { _ in true }
+            guard let data = response?.data else {
+                throw LocationsClientError.requestError
+            }
+            guard let processed = try? JSONDecoder().decode(NearbySearchResponse.self, from: data),
+                  let result = processed.data
+            else {
+                throw LocationsClientError.parseError
+            }
+            return result
+        } catch {
+            throw LocationsClientError.requestError
+        }
     }
+
+    static let liveValue = tripAdvisorSource
 }
 
 extension LocationsClient: TestDependencyKey {

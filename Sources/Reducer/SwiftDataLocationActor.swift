@@ -38,3 +38,5 @@ final class LocationPersistentModelDTO: Sendable, Identifiable {
         self.name = name
     }
 }
+
+// import RealmSwift

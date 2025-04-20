@@ -9,9 +9,14 @@
 import ComposableArchitecture
 import Foundation
 
+enum LocationsClientError: Error {
+    case requestError
+    case parseError
+}
+
 @DependencyClient
 struct LocationsClient {
-    typealias SearchFunction = @Sendable (Double?, Double?) async throws -> [Location]
+    typealias SearchFunction = @Sendable (Double?, Double?) async throws (LocationsClientError) -> [Location]
 
     var search: SearchFunction
 }
