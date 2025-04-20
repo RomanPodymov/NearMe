@@ -35,18 +35,14 @@ struct PlacesReducer {
             case .onAppear:
                 return .run { send in
                     if let places = try? await localStorageClient.search(nil, nil), !places.isEmpty {
-                        await send(.onPlacesReceived(places.map {
-                            .init(name: $0.name)
-                        }))
+                        await send(.onPlacesReceived(places))
                         return
                     }
 
                     let coordinate = try await receiveCoordinate()
 
                     let locations = try await locationsClient.search(coordinate?.latitude, coordinate?.longitude)
-                    try await localStorageClient.save(locations.map {
-                        LocationPersistentModelDTO(name: $0.name)
-                    })
+                    try await localStorageClient.save(locations)
                     await send(.onPlacesReceived(locations))
                 }
             case let .onPlacesReceived(places):

@@ -49,10 +49,14 @@ extension LocalStorageClient: DependencyKey {
 
         var client = LocalStorageClient()
         client.search = { _, _ in
-            try await locationActor.fetchLocations()
+            try await locationActor.fetchLocations().map {
+                .init(name: $0.name)
+            }
         }
         client.save = {
-            try await locationActor.saveLocations(locations: $0)
+            try await locationActor.saveLocations(locations: $0.map {
+                .init(name: $0.name)
+            })
         }
 
         return client
@@ -63,7 +67,7 @@ extension LocalStorageClient: TestDependencyKey {
     static let previewValue: LocalStorageClient = {
         var client = Self()
         client.search = { _, _ in
-            [LocationPersistentModelDTO(name: "Location1"), LocationPersistentModelDTO(name: "Location2"), LocationPersistentModelDTO(name: "Location3")]
+            [.init(name: "Location1"), .init(name: "Location2"), .init(name: "Location3")]
         }
         client.save = { _ in
         }

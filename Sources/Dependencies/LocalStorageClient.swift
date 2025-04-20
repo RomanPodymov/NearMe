@@ -12,8 +12,8 @@ import SwiftData
 
 @DependencyClient
 struct LocalStorageClient {
-    typealias SearchFunction = @Sendable (Double?, Double?) async throws -> [LocationPersistentModelDTO]
-    typealias SaveFunction = @Sendable ([LocationPersistentModelDTO]) async throws -> Void
+    typealias SearchFunction = @Sendable (Double?, Double?) async throws -> [Location]
+    typealias SaveFunction = @Sendable ([Location]) async throws -> Void
 
     var search: SearchFunction!
     var save: SaveFunction!
