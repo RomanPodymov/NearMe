@@ -14,6 +14,9 @@ packages:
   SwiftLocation:
     url: https://github.com/malcommac/SwiftLocation.git
     branch: master
+  RealmSwift:
+    url: https://github.com/realm/realm-swift.git
+    version: 20.0.2
 targets:
   NearMeApp:
     settings:
@@ -27,6 +30,7 @@ targets:
       - package: ComposableArchitecture
       - package: CombineMoya
       - package: SwiftLocation
+      - package: RealmSwift
     info:
       path: Sources/Info.plist
       properties:

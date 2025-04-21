@@ -6,12 +6,10 @@
 //  Copyright © 2025 NearMe. All rights reserved.
 //
 
-import CombineMoya
 import ComposableArchitecture
 import CoreLocation
 import Foundation
 import Moya
-import SwiftData
 @preconcurrency import SwiftLocation
 
 @Reducer
@@ -27,34 +25,24 @@ struct PlacesReducer {
         case places(IdentifiedActionOf<PlaceReducer>)
     }
 
-    let container: ModelContainer
+    @Dependency(\.localStorageClient) var localStorageClient
+    @Dependency(\.locationsClient) var locationsClient
 
     var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
             case .onAppear:
                 return .run { send in
-                    let locationActor = LocationActor(modelContainer: container)
-                    if let places = try? await locationActor.fetchLocations(), !places.isEmpty {
-                        await send(.onPlacesReceived(places.map {
-                            .init(name: $0.name)
-                        }))
+                    if let places = try? await localStorageClient.search(nil, nil), !places.isEmpty {
+                        await send(.onPlacesReceived(places))
                         return
                     }
 
                     let coordinate = try await receiveCoordinate()
-                    let provider = MoyaProvider<TripAdvisorService>()
-                    let response = try await provider.requestPublisher(
-                        .search(
-                            coordinate?.latitude ?? .zero,
-                            coordinate?.longitude ?? .zero
-                        )
-                    ).values.first { _ in true }
-                    let processed = try JSONDecoder().decode(NearbySearchResponse.self, from: response?.data ?? .init())
-                    try await locationActor.saveLocations(locations: processed.data?.map {
-                        LocationPersistentModelDTO(name: $0.name)
-                    } ?? .init())
-                    await send(.onPlacesReceived(processed.data ?? .init()))
+
+                    let locations = try await locationsClient.search(coordinate?.latitude, coordinate?.longitude)
+                    try await localStorageClient.save(locations)
+                    await send(.onPlacesReceived(locations))
                 }
             case let .onPlacesReceived(places):
                 set(state: &state, places: places)
