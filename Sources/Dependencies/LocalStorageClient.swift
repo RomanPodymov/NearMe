@@ -15,8 +15,8 @@ struct LocalStorageClient {
     typealias SearchFunction = @Sendable (Double?, Double?) async throws -> [Location]
     typealias SaveFunction = @Sendable ([Location]) async throws -> Void
 
-    var search: SearchFunction!
-    var save: SaveFunction!
+    var search: SearchFunction
+    var save: SaveFunction
 }
 
 extension DependencyValues {

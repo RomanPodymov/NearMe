@@ -30,6 +30,7 @@ targets:
       - package: ComposableArchitecture
       - package: CombineMoya
       - package: SwiftLocation
+      - package: RealmSwift
     info:
       path: Sources/Info.plist
       properties:
