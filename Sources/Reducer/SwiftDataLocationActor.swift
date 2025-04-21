@@ -39,4 +39,8 @@ final class LocationPersistentModelDTO: Sendable, Identifiable {
     }
 }
 
-// import RealmSwift
+import RealmSwift
+
+final class LocationPersistentModelDTORealm: Object {
+    @Persisted var name: String?
+}

@@ -15,7 +15,11 @@ import SwiftData
 
 extension LocationsClient: DependencyKey {
     private static let tripAdvisorSource = LocationsClient { latitude, longitude throws (LocationsClientError) in
-        let provider = MoyaProvider<TripAdvisorService>()
+        let provider = MoyaProvider<TripAdvisorService>(plugins: [
+            NetworkLoggerPlugin(configuration: .init(
+                logOptions: [.requestBody, .successResponseBody, .errorResponseBody]
+            )),
+        ])
         let response = try? await provider.requestPublisher(
             .search(
                 latitude ?? .zero,
@@ -56,7 +60,7 @@ extension LocalStorageClient: DependencyKey {
         // swiftlint:enable force_try
         let locationActor: SwiftDataLocationActor = .init(modelContainer: container)
 
-        var client = LocalStorageClient(
+        return LocalStorageClient(
             search: { _, _ in
                 try await locationActor.fetchLocations().map {
                     .init(name: $0.name)
@@ -67,11 +71,9 @@ extension LocalStorageClient: DependencyKey {
                 })
             }
         )
-
-        return client
     }()
 
-    static let liveValue = swiftDataClient
+    static let liveValue = realmClient // swiftDataClient
 }
 
 extension LocalStorageClient: TestDependencyKey {
@@ -93,14 +95,20 @@ import RealmSwift
 
 extension LocalStorageClient {
     private static let realmClient: LocalStorageClient = {
-        let realm = try? Realm()
-
-        var client = LocalStorageClient(search: { _, _ in
-            []
-        }, save: { _ in
-
+        return LocalStorageClient(search: { _, _ in
+            let realm = try Realm()
+            return realm.objects(LocationPersistentModelDTORealm.self).map {
+                Location(name: $0.name)
+            }
+        }, save: { locations in
+            let realm = try Realm()
+            for location in locations {
+                try realm.write {
+                    let obj = LocationPersistentModelDTORealm()
+                    obj.name = location.name
+                    realm.add(obj)
+                }
+            }
         })
-
-        return client
     }()
 }
