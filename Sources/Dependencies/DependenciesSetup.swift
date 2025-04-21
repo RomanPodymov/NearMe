@@ -9,6 +9,7 @@
 import ComposableArchitecture
 import Foundation
 import Moya
+import RealmSwift
 import SwiftData
 
 // MARK: - LocationsClient
@@ -73,6 +74,22 @@ extension LocalStorageClient: DependencyKey {
         )
     }()
 
+    private static let realmClient: LocalStorageClient = .init(search: { _, _ in
+        let realm = try Realm()
+        return realm.objects(LocationPersistentModelRealm.self).map {
+            Location(name: $0.name)
+        }
+    }, save: { locations in
+        let realm = try Realm()
+        for location in locations {
+            try realm.write {
+                let obj = LocationPersistentModelRealm()
+                obj.name = location.name
+                realm.add(obj)
+            }
+        }
+    })
+
     static let liveValue = realmClient // swiftDataClient
 }
 
@@ -89,26 +106,4 @@ extension LocalStorageClient: TestDependencyKey {
     }()
 
     static let testValue = previewValue
-}
-
-import RealmSwift
-
-extension LocalStorageClient {
-    private static let realmClient: LocalStorageClient = {
-        return LocalStorageClient(search: { _, _ in
-            let realm = try Realm()
-            return realm.objects(LocationPersistentModelDTORealm.self).map {
-                Location(name: $0.name)
-            }
-        }, save: { locations in
-            let realm = try Realm()
-            for location in locations {
-                try realm.write {
-                    let obj = LocationPersistentModelDTORealm()
-                    obj.name = location.name
-                    realm.add(obj)
-                }
-            }
-        })
-    }()
 }
