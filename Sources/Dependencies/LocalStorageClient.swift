@@ -8,7 +8,6 @@
 
 import ComposableArchitecture
 import Foundation
-import SwiftData
 
 @DependencyClient
 struct LocalStorageClient {
