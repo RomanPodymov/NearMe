@@ -7,7 +7,10 @@ options:
 packages:
   ComposableArchitecture:
     url: https://github.com/pointfreeco/swift-composable-architecture.git
-    version: 1.19.0
+    version: 1.18.0
+  TCACoordinators:
+    url: https://github.com/johnpatrickmorgan/TCACoordinators.git
+    branch: main
   CombineMoya:
     url: https://github.com/Moya/Moya.git
     version: 15.0.3
@@ -28,6 +31,7 @@ targets:
     sources: [Sources]
     dependencies:
       - package: ComposableArchitecture
+      - package: TCACoordinators
       - package: CombineMoya
       - package: SwiftLocation
       - package: RealmSwift
