@@ -14,7 +14,7 @@ struct PlaceReducer {
     @ObservableState
     struct State: Equatable, Identifiable {
         let id: UUID = .init()
-        var location: Location?
+        var location: TripLocation?
     }
 
     enum Action: Sendable {

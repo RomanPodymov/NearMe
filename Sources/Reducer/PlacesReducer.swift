@@ -21,7 +21,7 @@ struct PlacesReducer {
 
     enum Action {
         case onAppear
-        case onPlacesReceived([Location])
+        case onPlacesReceived([TripLocation])
         case places(IdentifiedActionOf<PlaceReducer>)
     }
 
@@ -55,7 +55,7 @@ struct PlacesReducer {
 
     private func receiveCoordinate() async throws -> CLLocationCoordinate2D? {
         let location = await _Concurrency.Task { @MainActor in
-            SwiftLocation.Location()
+            Location()
         }.value
 
         let requestPermissionResult = try await location.requestPermission(.always)
@@ -65,7 +65,7 @@ struct PlacesReducer {
         return try await location.requestLocation().location?.coordinate
     }
 
-    private func set(state: inout PlacesReducer.State, places: [Location]) {
+    private func set(state: inout PlacesReducer.State, places: [TripLocation]) {
         state.places.removeAll()
         let states = places.map {
             PlaceReducer.State(location: $0)

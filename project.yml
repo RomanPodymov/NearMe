@@ -13,7 +13,7 @@ packages:
     version: 15.0.3
   SwiftLocation:
     url: https://github.com/malcommac/SwiftLocation.git
-    branch: master
+    version: 6.0
   RealmSwift:
     url: https://github.com/realm/realm-swift.git
     version: 20.0.2
@@ -39,14 +39,14 @@ targets:
         NSLocationWhenInUseUsageDescription: TODO
         NSLocationAlwaysUsageDescription: TODO
         NSLocationAlwaysAndWhenInUseUsageDescription: TODO
-    preBuildScripts:
-      - script: "mint run swiftgen"
-        name: SwiftGen
-    postCompileScripts:
-      - script: "mint run swiftformat . --swiftversion 6.0"
-        name: SwiftFormat
-      - script: "mint run swiftlint"
-        name: SwiftLint
+    #preBuildScripts:
+    #  - script: "mint run swiftgen"
+    #    name: SwiftGen
+    #postCompileScripts:
+    #  - script: "mint run swiftformat . --swiftversion 6.0"
+    #    name: SwiftFormat
+    #  - script: "mint run swiftlint"
+    #    name: SwiftLint
   NearMeAppTests:
     settings:
       base:

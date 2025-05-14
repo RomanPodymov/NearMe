@@ -13,14 +13,14 @@ actor SwiftDataLocationActor {
     private var context: ModelContext { modelExecutor.modelContext }
 
     func fetchLocations() throws -> [LocationPersistentModelSwiftData] {
-        try context.fetch(FetchDescriptor<Location>()).map {
+        try context.fetch(FetchDescriptor<TripLocation>()).map {
             .init(id: $0.id, name: $0.name)
         }
     }
 
     func saveLocations(locations: [LocationPersistentModelSwiftData]) throws {
         locations.forEach {
-            context.insert(Location(name: $0.name))
+            context.insert(TripLocation(name: $0.name))
         }
         try context.save()
     }

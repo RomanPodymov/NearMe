@@ -16,7 +16,7 @@ enum LocationsClientError: Error {
 
 @DependencyClient
 struct LocationsClient {
-    typealias SearchFunction = @Sendable (Double?, Double?) async throws (LocationsClientError) -> [Location]
+    typealias SearchFunction = @Sendable (Double?, Double?) async throws (LocationsClientError) -> [TripLocation]
 
     var search: SearchFunction
 }

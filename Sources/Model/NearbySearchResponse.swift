@@ -13,19 +13,19 @@ import SwiftData
 
 @Model
 final class NearbySearchResponse: Codable, Equatable {
-    var data: [Location]?
+    var data: [TripLocation]?
 
     private enum CodingKeys: String, CodingKey {
         case data
     }
 
-    init(data: [Location]) {
+    init(data: [TripLocation]) {
         self.data = data
     }
 
     init(from decoder: any Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        data = try values.decodeIfPresent([Location].self, forKey: .data)
+        data = try values.decodeIfPresent([TripLocation].self, forKey: .data)
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -37,7 +37,7 @@ final class NearbySearchResponse: Codable, Equatable {
 // MARK: - Location
 
 @Model
-final class Location: Codable, Equatable {
+final class TripLocation: Codable, Equatable {
     var name: String?
 
     private enum CodingKeys: String, CodingKey {
