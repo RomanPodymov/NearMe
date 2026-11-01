@@ -56,3 +56,8 @@ targets:
       - target: NearMeApp
     info:
       path: Tests/Info.plist
+    postCompileScripts:
+      - path: swiftformat.sh
+        name: SwiftFormat
+      - path: swiftlint.sh
+        name: SwiftLint
