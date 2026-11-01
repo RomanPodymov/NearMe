@@ -7,7 +7,7 @@ options:
 packages:
   ComposableArchitecture:
     url: https://github.com/pointfreeco/swift-composable-architecture.git
-    version: 1.19.0
+    version: 1.26.2
   CombineMoya:
     url: https://github.com/Moya/Moya.git
     version: 15.0.3
@@ -16,7 +16,7 @@ packages:
     version: 6.0
   RealmSwift:
     url: https://github.com/realm/realm-swift.git
-    version: 20.0.2
+    version: 20.0.6
 targets:
   NearMeApp:
     settings:
