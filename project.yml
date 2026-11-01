@@ -39,14 +39,11 @@ targets:
         NSLocationWhenInUseUsageDescription: TODO
         NSLocationAlwaysUsageDescription: TODO
         NSLocationAlwaysAndWhenInUseUsageDescription: TODO
-    #preBuildScripts:
-    #  - script: "mint run swiftgen"
-    #    name: SwiftGen
-    #postCompileScripts:
-    #  - script: "mint run swiftformat . --swiftversion 6.0"
-    #    name: SwiftFormat
-    #  - script: "mint run swiftlint"
-    #    name: SwiftLint
+    postCompileScripts:
+      - path: swiftformat.sh
+        name: SwiftFormat
+      - path: swiftlint.sh
+        name: SwiftLint
   NearMeAppTests:
     settings:
       base:
