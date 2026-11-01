@@ -43,7 +43,7 @@ extension LocationsClient: DependencyKey {
 
 extension LocationsClient: TestDependencyKey {
     static let previewValue = Self(search: { _, _ in
-        [Location(name: "Location1"), Location(name: "Location2"), Location(name: "Location3")]
+        [TripLocation(name: "Location1"), TripLocation(name: "Location2"), TripLocation(name: "Location3")]
     })
 
     static let testValue = previewValue
@@ -53,8 +53,8 @@ extension LocationsClient: TestDependencyKey {
 
 extension LocalStorageClient: DependencyKey {
     private static let swiftDataClient: LocalStorageClient = {
-        let configuration = ModelConfiguration(for: Location.self)
-        let schema = Schema([Location.self])
+        let configuration = ModelConfiguration(for: TripLocation.self)
+        let schema = Schema([TripLocation.self])
 
         // swiftlint:disable force_try
         let container = try! ModelContainer(for: schema, configurations: [configuration])
@@ -77,7 +77,7 @@ extension LocalStorageClient: DependencyKey {
     private static let realmClient: LocalStorageClient = .init(search: { _, _ in
         let realm = try Realm()
         return realm.objects(LocationPersistentModelRealm.self).map {
-            Location(name: $0.name)
+            TripLocation(name: $0.name)
         }
     }, save: { locations in
         let realm = try Realm()

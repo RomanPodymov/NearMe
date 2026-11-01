@@ -7,16 +7,16 @@ options:
 packages:
   ComposableArchitecture:
     url: https://github.com/pointfreeco/swift-composable-architecture.git
-    version: 1.19.0
+    version: 1.26.2
   CombineMoya:
     url: https://github.com/Moya/Moya.git
     version: 15.0.3
   SwiftLocation:
     url: https://github.com/malcommac/SwiftLocation.git
-    branch: master
+    version: 6.0
   RealmSwift:
     url: https://github.com/realm/realm-swift.git
-    version: 20.0.2
+    version: 20.0.6
 targets:
   NearMeApp:
     settings:
@@ -39,13 +39,10 @@ targets:
         NSLocationWhenInUseUsageDescription: TODO
         NSLocationAlwaysUsageDescription: TODO
         NSLocationAlwaysAndWhenInUseUsageDescription: TODO
-    preBuildScripts:
-      - script: "mint run swiftgen"
-        name: SwiftGen
     postCompileScripts:
-      - script: "mint run swiftformat . --swiftversion 6.0"
+      - path: swiftformat.sh
         name: SwiftFormat
-      - script: "mint run swiftlint"
+      - path: swiftlint.sh
         name: SwiftLint
   NearMeAppTests:
     settings:
@@ -59,3 +56,8 @@ targets:
       - target: NearMeApp
     info:
       path: Tests/Info.plist
+    postCompileScripts:
+      - path: swiftformat.sh
+        name: SwiftFormat
+      - path: swiftlint.sh
+        name: SwiftLint
